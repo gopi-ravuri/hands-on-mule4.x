@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="apiFlow2" doc:id="6bf49b60-2569-403f-bc87-1afb35abf0a6" >
+		<ee:transform doc:name="Transform Message" doc:id="22ef33c5-de21-4fc5-affb-212963532c29" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var fileName= "config-" ++ p('mule.env') ++ ".yaml"
+---
+(readUrl('classpath://'++ fileName,"application/yaml")).routes pluck ($)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="29ad4266-5f1f-4854-8e66-e20a197e0de9" >
+			<http:request method="#[payload.method]" doc:name="Request" doc:id="e3640543-8f64-4573-a931-d0334e1883b7" url="#[payload.url]">
+				<http:body ><![CDATA[#[payload.payload]]]></http:body>
+				<http:headers ><![CDATA[#[output application/json
+---
+payload.headers]]]></http:headers>
+				<http:query-params ><![CDATA[#[output application/json
+---
+payload.queryParams]]]></http:query-params>
+			</http:request>
+		</foreach>
+	</flow></mule>
